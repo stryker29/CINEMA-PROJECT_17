@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineStar - Personal Autorizado</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a0000 0%, #330000 25%, #000000 50%, #1a0000 75%, #330000 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(255, 0, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 0, 0, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(255, 0, 0, 0.08) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        header {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.3);
+            position: relative;
+            z-index: 10;
+            border-bottom: 2px solid #ff0000;
+        }
+
+        header h1 {
+            font-size: 3em;
+            color: #ff0000;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.8), 0 0 40px rgba(255, 0, 0, 0.5);
+            letter-spacing: 3px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            max-width: 1400px;
+            margin: 50px auto;
+            padding: 0 20px;
+            gap: 40px;
+            position: relative;
+            z-index: 5;
+            width: 100%;
+        }
+
+        /* Cartelera Section */
+        .cartelera-section {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(255, 0, 0, 0.3);
+            border: 2px solid rgba(255, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .cartelera-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(255, 0, 0, 0.5);
+        }
+
+        .cartelera-section h2 {
+            color: #ff0000;
+            margin-bottom: 20px;
+            font-size: 2em;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+        .cartelera-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            overflow: hidden;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .cartelera-img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .cartelera-img.active {
+            opacity: 1;
+        }
+
+        /* Sección de login */
+        .login-section {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(255, 0, 0, 0.3);
+            border: 2px solid rgba(255, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .login-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(255, 0, 0, 0.5);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .login-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+            animation: bounce 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 20px rgba(255, 0, 0, 0.6));
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .login-header h2 {
+            color: #ff0000;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
+        }
+
+        .login-header p {
+            color: #ff6666;
+            font-size: 1em;
+            margin-top: 10px;
+        }
+
+        .access-level {
+            display: inline-block;
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 0.85em;
+            margin-top: 10px;
+            animation: glow 2s ease-in-out infinite;
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(255, 0, 0, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(255, 0, 0, 0.8); }
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #ff6666;
+            font-weight: bold;
+            font-size: 1em;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2em;
+            color: #ff6666;
+            z-index: 2;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px 15px 15px 50px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(255, 0, 0, 0.3);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #ff0000;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #ff0000, #cc0000);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.4);
+            margin-top: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .submit-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .submit-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(255, 0, 0, 0.6);
+        }
+
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        /* Mensaje Toast flotante */
+        .alert {
+            padding: 20px 30px;
+            border-radius: 15px;
+            display: none;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            min-width: 400px;
+            max-width: 600px;
+            animation: slideDownBounce 0.6s ease;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+        }
+
+        @keyframes slideDownBounce {
+            0% {
+                transform: translateX(-50%) translateY(-100px);
+                opacity: 0;
+            }
+            70% {
+                transform: translateX(-50%) translateY(10px);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .alert.success {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.9), rgba(0, 200, 0, 0.9));
+            border: 3px solid #00ff00;
+            color: #000;
+            font-weight: 900;
+            text-shadow: 0 1px 3px rgba(255, 255, 255, 0.5);
+        }
+
+        .alert.error {
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.9), rgba(200, 0, 0, 0.9));
+            border: 3px solid #ff0000;
+            color: #fff;
+            font-weight: 900;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            text-align: center;
+            border-top: 2px solid #ff0000;
+            position: relative;
+            z-index: 10;
+            color: #ff6666;
+            font-size: 0.9em;
+        }
+
+        /* Responsive */
+        @media (max-width: 968px) {
+            .container {
+                flex-direction: column;
+            }
+
+            header h1 {
+                font-size: 2em;
+            }
+
+            .cartelera-container {
+                height: 350px;
+            }
+
+            .alert {
+                min-width: 90%;
+                left: 5%;
+                transform: translateX(0);
+                font-size: 1em;
+                padding: 15px 20px;
+            }
+
+            @keyframes slideDownBounce {
+                0% {
+                    transform: translateY(-100px);
+                    opacity: 0;
+                }
+                70% {
+                    transform: translateY(10px);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            .login-header h2 {
+                font-size: 1.8em;
+            }
+
+            .login-icon {
+                font-size: 3em;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>🎬 CINESTAR 🎬</h1>
+</header>
+
+<!-- Mensaje Toast flotante -->
+<div id="alertMessage" class="alert"></div>
+
+<div class="container">
+    <!-- Cartelera Section -->
+    <div class="cartelera-section">
+        <h2>🍿 EN CARTELERA 🍿</h2>
+        <div class="cartelera-container">
+            <img src="img/peli1.png" class="cartelera-img active" alt="Película 1">
+            <img src="img/peli2.png" class="cartelera-img" alt="Película 2">
+            <img src="img/peli3.png" class="cartelera-img" alt="Película 3">
+            <img src="img/peli4.png" class="cartelera-img" alt="Película 4">
+            <img src="img/peli5.png" class="cartelera-img" alt="Película 5">
+        </div>
+    </div>
+
+    <!-- Sección de login -->
+    <div class="login-section">
+        <div class="login-header">
+            <div class="login-icon">🔐</div>
+            <h2>ACCESO RESTRINGIDO</h2>
+            <p>Solo para personal del CineStar</p>
+            <div class="access-level">🎫 NIVEL DE ACCESO: PERSONAL</div>
+        </div>
+
+        <form id="adminLoginForm">
+            <div class="form-group">
+                <label for="usuario">Usuario</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">👤</span>
+                    <input
+                            type="text"
+                            id="usuario"
+                            name="usuario"
+                            placeholder="Ingrese su usuario"
+                            required
+                            autocomplete="username"
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="clave">Contraseña</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔑</span>
+                    <input
+                            type="password"
+                            id="clave"
+                            name="clave"
+                            placeholder="Ingrese su contraseña"
+                            required
+                            autocomplete="current-password"
+                    >
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">INICIAR SESIÓN</button>
+        </form>
+    </div>
+</div>
+
+<footer>
+    © 2025 CineStar - Sistema de Gestión Interno
+</footer>
+
+<script src="js/admin-login.js"></script>
+</body>
+</html>

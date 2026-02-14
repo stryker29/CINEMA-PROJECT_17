@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineStar - Selección de Asientos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a0000 0%, #330000 25%, #000000 50%, #1a0000 75%, #330000 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(circle at 20% 30%, rgba(255, 0, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(255, 0, 0, 0.15) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Header */
+        header {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.3);
+            position: relative;
+            z-index: 10;
+            border-bottom: 2px solid #ff0000;
+        }
+
+        header h1 {
+            font-size: 2.2em;
+            color: #ff0000;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+            letter-spacing: 2px;
+        }
+
+        /* Toast de alerta flotante */
+        .alert {
+            padding: 20px 30px;
+            border-radius: 15px;
+            display: none;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            min-width: 400px;
+            max-width: 600px;
+            animation: slideDownBounce 0.6s ease;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);
+        }
+
+        @keyframes slideDownBounce {
+            0% {
+                transform: translateX(-50%) translateY(-100px);
+                opacity: 0;
+            }
+            70% {
+                transform: translateX(-50%) translateY(10px);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .alert.success {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.9), rgba(0, 200, 0, 0.9));
+            border: 3px solid #00ff00;
+            color: #000;
+            text-shadow: 0 1px 3px rgba(255, 255, 255, 0.5);
+        }
+
+        .alert.error {
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.9), rgba(200, 0, 0, 0.9));
+            border: 3px solid #ff0000;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .alert.warning {
+            background: linear-gradient(135deg, rgba(255, 165, 0, 0.9), rgba(255, 140, 0, 0.9));
+            border: 3px solid #ffa500;
+            color: #000;
+            text-shadow: 0 1px 3px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Container principal */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* Info de la película */
+        .pelicula-info {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid rgba(255, 0, 0, 0.3);
+            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.2);
+        }
+
+        .pelicula-info h2 {
+            color: #ff0000;
+            font-size: 2em;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+        .pelicula-detalles {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .detalle-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ff6666;
+        }
+
+        .detalle-item strong {
+            color: #fff;
+        }
+
+        /* Layout principal */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            align-items: start;
+        }
+
+        /* Área de pantalla */
+        .sala-container {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 0, 0, 0.3);
+        }
+
+        .pantalla {
+            background: linear-gradient(180deg, #666, #333);
+            height: 15px;
+            border-radius: 50% 50% 0 0;
+            margin: 0 auto 40px;
+            width: 80%;
+            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.3);
+            position: relative;
+        }
+
+        .pantalla::after {
+            content: 'PANTALLA';
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #999;
+            font-size: 0.9em;
+            letter-spacing: 2px;
+        }
+
+        /* Asientos */
+        .asientos-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .fila-asientos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .etiqueta-fila {
+            width: 30px;
+            text-align: center;
+            font-weight: bold;
+            color: #ff6666;
+            font-size: 1em;
+        }
+
+        .asiento {
+            width: 35px;
+            height: 35px;
+            border: 2px solid #444;
+            border-radius: 8px 8px 0 0;
+            background: #2a2a2a;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.75em;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .asiento:hover:not(:disabled) {
+            transform: scale(1.15);
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.6);
+        }
+
+        /* ✅ ASIENTOS DISPONIBLES - VERDE */
+        .asiento.estado-disponible {
+            background: #00aa00;
+            border-color: #00ff00;
+        }
+
+        .asiento.estado-disponible:hover {
+            background: #00ff00;
+        }
+
+        /* ✅ ASIENTOS SELECCIONADOS - ROJO BRILLANTE */
+        .asiento.asiento-seleccionado {
+            background: #ff0000 !important;
+            border-color: #ff6666 !important;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+            transform: scale(1.1);
+        }
+
+        /* ✅ ASIENTOS RESERVADOS - AMARILLO INTENSO (temporal, no pagado) */
+        .asiento.estado-reservado {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%) !important;
+            border-color: #ff9800 !important;
+            cursor: not-allowed;
+            opacity: 1;
+            color: #000 !important;
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+        }
+
+        /* ✅ ASIENTOS OCUPADOS - BLANCO BRILLANTE (pagado, confirmado) */
+        .asiento.estado-ocupado {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%) !important;
+            border-color: #cccccc !important;
+            cursor: not-allowed;
+            opacity: 1;
+            color: #333 !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ✅ ASIENTOS NO DISPONIBLES - GRIS OSCURO CON EFECTO */
+        .asiento.estado-no-disponible {
+            background: linear-gradient(135deg, #333 0%, #222 100%) !important;
+            border-color: #555 !important;
+            cursor: not-allowed;
+            opacity: 0.6;
+            color: #666 !important;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Asientos especiales */
+        .asiento.asiento-discapacitado {
+            border: 3px solid #4169e1;
+        }
+
+        .asiento.asiento-acompañante {
+            border: 3px solid #ffa500;
+        }
+
+        .asiento.estado-ocupado.asiento-discapacitado {
+            border: 3px solid #4169e1 !important;
+        }
+
+        .asiento.estado-ocupado.asiento-acompañante {
+            border: 3px solid #ffa500 !important;
+        }
+
+        .asiento:disabled {
+            cursor: not-allowed;
+        }
+
+        /* Leyenda */
+        .leyenda {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(255, 0, 0, 0.3);
+            justify-content: center;
+        }
+
+        .leyenda-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #ccc;
+            font-size: 0.9em;
+        }
+
+        .leyenda-item .asiento {
+            width: 25px;
+            height: 25px;
+            font-size: 0.7em;
+        }
+
+        /* Panel de resumen */
+        .resumen-panel {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 0, 0, 0.4);
+            position: sticky;
+            top: 20px;
+            box-shadow: 0 8px 30px rgba(255, 0, 0, 0.3);
+        }
+
+        .resumen-panel h3 {
+            color: #ff0000;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        #resumen {
+            min-height: 100px;
+            margin-bottom: 20px;
+        }
+
+        .lista-asientos {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .asiento-resumen {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            background: rgba(255, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(255, 0, 0, 0.3);
+        }
+
+        .asiento-resumen .ubicacion {
+            font-weight: bold;
+            color: #ff6666;
+        }
+
+        .asiento-resumen .tipo {
+            color: #ccc;
+            font-size: 0.9em;
+        }
+
+        .asiento-resumen .precio {
+            color: #00ff00;
+            font-weight: bold;
+        }
+
+        .total-resumen {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            background: rgba(255, 0, 0, 0.2);
+            border-radius: 8px;
+            font-size: 1.2em;
+            margin-top: 15px;
+            border: 2px solid rgba(255, 0, 0, 0.5);
+        }
+
+        .text-muted {
+            color: #888;
+            text-align: center;
+            font-style: italic;
+        }
+
+        /* Botones */
+        .botones-accion {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff0000, #cc0000);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.4);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(255, 0, 0, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #666, #444);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn-secondary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: rgba(20, 0, 0, 0.95);
+            padding: 35px;
+            border-radius: 15px;
+            border: 3px solid #ff0000;
+            box-shadow: 0 10px 50px rgba(255, 0, 0, 0.5);
+            max-width: 400px;
+            width: 90%;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h3 {
+            color: #ff0000;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            text-align: center;
+        }
+
+        .modal-content p {
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(255, 0, 0, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1em;
+            margin: 15px 0;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #ff0000;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons .btn {
+            flex: 1;
+        }
+
+        /* Loader */
+        #loader {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9998;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loader-spinner {
+            border: 5px solid rgba(255, 0, 0, 0.2);
+            border-top: 5px solid #ff0000;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px;
+            text-align: center;
+            border-top: 2px solid #ff0000;
+            color: #ff6666;
+            margin-top: 50px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .resumen-panel {
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .asiento {
+                width: 30px;
+                height: 30px;
+                font-size: 0.65em;
+            }
+
+            .pelicula-detalles {
+                grid-template-columns: 1fr;
+            }
+
+            .alert {
+                min-width: 90%;
+                left: 5%;
+                transform: translateX(0);
+            }
+
+            @keyframes slideDownBounce {
+                0% {
+                    transform: translateY(-100px);
+                    opacity: 0;
+                }
+                70% {
+                    transform: translateY(10px);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>🎬 SELECCIÓN DE ASIENTOS</h1>
+</header>
+
+<!-- Toast de alertas -->
+<div id="alertMessage" class="alert"></div>
+
+<!-- Loader -->
+<div id="loader">
+    <div class="loader-spinner"></div>
+</div>
+
+<div class="container">
+    <!-- Información de la película -->
+    <div class="pelicula-info">
+        <h2 id="tituloPelicula">Cargando...</h2>
+        <div class="pelicula-detalles">
+            <div class="detalle-item">
+                <span>🎭</span>
+                <span><strong>Género:</strong> <span id="genero">-</span></span>
+            </div>
+            <div class="detalle-item">
+                <span>⏱️</span>
+                <span><strong>Duración:</strong> <span id="duracion">-</span></span>
+            </div>
+            <div class="detalle-item">
+                <span>📋</span>
+                <span><strong>Clasificación:</strong> <span id="clasificacion">-</span></span>
+            </div>
+            <div class="detalle-item">
+                <span>🕐</span>
+                <span><strong>Horario:</strong> <span id="horario">-</span></span>
+            </div>
+            <div class="detalle-item">
+                <span>🎪</span>
+                <span><strong>Sala:</strong> <span id="sala">-</span></span>
+            </div>
+            <div class="detalle-item">
+                <span>💺</span>
+                <span><strong>Disponibles:</strong> <span id="asientosDisponibles">-</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Layout principal -->
+    <div class="main-layout">
+        <!-- Área de sala y asientos -->
+        <div class="sala-container">
+            <div class="pantalla"></div>
+
+            <div id="asientosGrid" class="asientos-grid">
+                <!-- Los asientos se cargarán dinámicamente aquí -->
+            </div>
+
+            <!-- Leyenda -->
+            <div id="leyenda" class="leyenda">
+                <!-- Se generará dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Panel de resumen -->
+        <div class="resumen-panel">
+            <h3>📋 RESUMEN</h3>
+            <div id="resumen">
+                <p class="text-muted">No hay asientos seleccionados</p>
+            </div>
+
+            <div class="botones-accion">
+                <button id="btnContinuar" class="btn btn-primary" disabled>
+                    CONTINUAR
+                </button>
+                <button id="btnCancelar" class="btn btn-secondary">
+                    LIMPIAR SELECCIÓN
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    © 2025 CineStar - Sistema de Reservas
+</footer>
+
+<!-- ✅ JS embebido -->
+<script>
+    // ============================================================
+    // 🎬 SISTEMA DE SELECCIÓN DE ASIENTOS - CINESTAR (ACTUALIZADO)
+    // ============================================================
+
+    // Raíz de la API (ajusta si tu backend está en otra ruta)
+    const API_ROOT_URL = 'http://localhost:8080/api';
+
+    // Reservas
+    const API_RESERVAS_URL = `${API_ROOT_URL}/reservas`;
+
+    // Funciones
+    const API_FUNCIONES_URL = `${API_ROOT_URL}/funciones`;
+
+    // Asientos por función
+    const API_ASIENTOS_URL = `${API_RESERVAS_URL}/asientos`;
+
+    // ==================== VARIABLES GLOBALES ====================
+    let funcionSeleccionada = null;
+    let salaSeleccionada = null;
+    let asientosDisponibles = [];
+    let asientosSeleccionados = [];
+    let precioTotal = 0.0;
+
+    // Tipos de entrada (deben coincidir con la BD)
+    const TIPOS_ENTRADA = {
+        1: { nombre: 'Adulto', precio: 29.00 },
+        2: { nombre: 'Niño', precio: 25.00 },
+        3: { nombre: 'Persona con discapacidad', precio: 22.00 },
+        4: { nombre: 'Acompañante', precio: 22.00 }
+    };
+
+    // ==================== INICIALIZACIÓN ====================
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('✓ Sistema de selección cargado');
+
+        const urlParams = new URLSearchParams(window.location.search);
+        funcionSeleccionada = parseInt(urlParams.get('funcionId')) || 1;
+        salaSeleccionada = parseInt(urlParams.get('salaId')) || 1;
+
+        console.log('Función seleccionada:', funcionSeleccionada, 'Sala seleccionada:', salaSeleccionada);
+
+        if (!funcionSeleccionada || !salaSeleccionada) {
+            mostrarMensaje('❌ Parámetros inválidos en la URL (funcionId / salaId)', 'error');
+            return;
+        }
+
+        inicializarPagina();
+
+        document.getElementById('btnContinuar')?.addEventListener('click', procesarReserva);
+        document.getElementById('btnCancelar')?.addEventListener('click', limpiarSeleccion);
+    });
+
+    // ==================== INICIALIZACIÓN DE PÁGINA ====================
+    async function inicializarPagina() {
+        mostrarCargando(true);
+
+        await cargarInformacionFuncion();  // Película/sala desde BD
+        await cargarAsientosDesdeDB();     // Estados reales de asientos
+
+        mostrarCargando(false);
+    }
+
+    // ==================== CARGAR INFORMACIÓN DE LA FUNCIÓN ====================
+    async function cargarInformacionFuncion() {
+        const tituloElem = document.getElementById('tituloPelicula');
+        const generoElem = document.getElementById('genero');
+        const duracionElem = document.getElementById('duracion');
+        const clasificacionElem = document.getElementById('clasificacion');
+        const horarioElem = document.getElementById('horario');
+        const salaElem = document.getElementById('sala');
+        const disponiblesElem = document.getElementById('asientosDisponibles');
+
+        try {
+            const resp = await fetch(`${API_FUNCIONES_URL}/${funcionSeleccionada}`);
+            console.log('GET función status:', resp.status);
+
+            if (resp.ok) {
+                const json = await resp.json();
+                console.log('Respuesta función:', json);
+
+                const dto = json.data || json; // por seguridad, soportar ambos formatos
+
+                tituloElem.textContent = dto.titulo || 'Función sin título';
+                generoElem.textContent = dto.genero || '-';
+                duracionElem.textContent = dto.duracion ? `${dto.duracion} min` : '-';
+                clasificacionElem.textContent = dto.clasificacion || '-';
+                horarioElem.textContent = dto.fechaHoraInicio || '-';
+                salaElem.textContent = dto.salaNombre || `Sala ${dto.salaId || salaSeleccionada}`;
+
+                if (dto.asientosDisponibles != null) {
+                    disponiblesElem.textContent = dto.asientosDisponibles;
+                }
+
+                console.log('✓ Datos de función cargados desde BD');
+                return;
+            } else {
+                console.warn('⚠️ No se pudo obtener la función desde la API, status:', resp.status);
+            }
+        } catch (e) {
+            console.warn('⚠️ Error al obtener la función desde la API:', e);
+        }
+
+        // 🔹 Si falla la API, usar datos de ejemplo (mock)
+        console.warn('Usando datos mock para la función');
+        const funcionesMock = {
+            1: {
+                titulo: 'FIVE NIGHTS AT FREDDY\'S 2',
+                genero: 'Terror',
+                duracion: 110,
+                clasificacion: 'XD + 2D',
+                horario: 'jueves, 04/12 - 00:05',
+                sala: 'Sala 10',
+                disponibles: '-'
+            },
+            2: {
+                titulo: 'SOTO TEADOR',
+                genero: 'Suspenso',
+                duracion: 110,
+                clasificacion: 'PG-13',
+                horario: 'viernes, 05/12 - 18:00',
+                sala: 'Sala 5',
+                disponibles: '-'
+            }
+        };
+
+        const data = funcionesMock[funcionSeleccionada] || funcionesMock[1];
+
+        tituloElem.textContent = data.titulo;
+        generoElem.textContent = data.genero;
+        duracionElem.textContent = `${data.duracion} min`;
+        clasificacionElem.textContent = data.clasificacion;
+        horarioElem.textContent = data.horario;
+        salaElem.textContent = data.sala;
+        disponiblesElem.textContent = data.disponibles;
+    }
+
+    // ==================== CARGAR ASIENTOS DESDE DB ====================
+    async function cargarAsientosDesdeDB() {
+        try {
+            console.log('Generando asientos para Sala', salaSeleccionada, 'Función', funcionSeleccionada);
+            const asientos = generarAsientosCompletos(); // estructura local
+
+            // Aplicar estados reales desde la BD
+            await aplicarAsientosDesdeBackend(asientos);
+
+            asientosDisponibles = asientos;
+            const disponibles = asientos.filter(a => a.estado === 'Disponible').length;
+            document.getElementById('asientosDisponibles').textContent = disponibles;
+
+            console.log(`✓ ${disponibles} asientos disponibles de ${asientos.length} totales`);
+
+            renderizarAsientos(asientos);
+
+        } catch (error) {
+            console.error('Error cargando asientos:', error);
+            mostrarMensaje('⚠️ Error al cargar asientos', 'warning');
+        }
+    }
+
+    // ==================== APLICAR ESTADOS REALES DESDE BACKEND ====================
+    async function aplicarAsientosDesdeBackend(asientos) {
+        try {
+            const resp = await fetch(`${API_ASIENTOS_URL}?funcionId=${funcionSeleccionada}`);
+            console.log('GET asientos status:', resp.status);
+
+            if (!resp.ok) {
+                console.warn('⚠️ No se pudieron cargar estados desde BD (HTTP ' + resp.status + '), usando solo locales');
+                return;
+            }
+
+            const json = await resp.json();
+            console.log('Respuesta asientos:', json);
+
+            const lista = Array.isArray(json) ? json : (json.asientos || []);
+
+            lista.forEach(asientoBD => {
+                const asiento = asientos.find(
+                    a => a.fila === asientoBD.fila && a.numero === asientoBD.numero
+                );
+
+                if (asiento) {
+                    asiento.estado = asientoBD.estado || 'Disponible';
+                    // si quisieras, podrías también usar asientoBD.tipo
+                    console.log(`Estado BD → ${asiento.fila}${asiento.numero}: ${asiento.estado}`);
+                }
+            });
+        } catch (e) {
+            console.warn('⚠️ Error al obtener estados reales de asientos, usando solo estados locales', e);
+        }
+    }
+
+    // ==================== GENERAR ASIENTOS COMPLETOS ====================
+    function generarAsientosCompletos() {
+        const asientos = [];
+        const filas = ['A', 'B', 'C', 'D', 'E'];
+        let asientoId = (salaSeleccionada - 1) * 70 + 1;
+
+        filas.forEach(fila => {
+            // Filas A-D: todos normales (14 asientos)
+            if (fila !== 'E') {
+                for (let numero = 1; numero <= 14; numero++) {
+                    asientos.push({
+                        asientoId: asientoId++,
+                        salaId: salaSeleccionada,
+                        fila: fila,
+                        numero: numero,
+                        estado: 'Disponible',
+                        tipo: 'Normal',
+                        categoriaAcceso: 'Normal',
+                        asientoRelacionadoId: null
+                    });
+                }
+            } else {
+                // Fila E: Pares especiales (1-8) + Normales (9-14)
+                // Par 1: E1 (Discapacitado) - E2 (Acompañante)
+                const id1 = asientoId++;
+                const id2 = asientoId++;
+                asientos.push({
+                    asientoId: id1,
+                    salaId: salaSeleccionada,
+                    fila: 'E',
+                    numero: 1,
+                    estado: 'Disponible',
+                    tipo: 'Discapacitado',
+                    categoriaAcceso: 'Accesibilidad',
+                    asientoRelacionadoId: id2
+                });
+                asientos.push({
+                    asientoId: id2,
+                    salaId: salaSeleccionada,
+                    fila: 'E',
+                    numero: 2,
+                    estado: 'Disponible',
+                    tipo: 'Acompañante',
+                    categoriaAcceso: 'Accesibilidad',
+                    asientoRelacionadoId: id1
+                });
+
+                // Par 2: E3-E4
+                const id3 = asientoId++;
+                const id4 = asientoId++;
+                asientos.push({
+                    asientoId: id3,
+                    salaId: salaSeleccionada,
+                    fila: 'E',
+                    numero: 3,
+                    estado: 'Disponible',
+                    tipo: 'Discapacitado',
+                    categoriaAcceso: 'Accesibilidad',
+                    asientoRelacionadoId: id4
+                });
+                asientos.push({
+                    asientoId: id4,
+                    salaId: salaSeleccionada,
+                    fila: 'E',
+                    numero: 4,
+                    estado: 'Disponible',
+                    tipo: 'Acompañante',
+                    categoriaAcceso: 'Accesibilidad',
+                    asientoRelacionadoId: id3
+                });
+
+                // Par 3: E5-E6
+                const id5 = asientoId++;
+                const id6 = asientoId++;
+                asientos.push({
+                    asientoId: id5,
+                    salaId: salaSeleccionada,
+                    fila: 'E',
+                    numero: 5,
+                    estado: 'Disponible',
+                    tipo: 'Discapacitado',
+                    categoriaAcceso: 'Accesibilidad',
+                    asientoRelacionadoId: id6
+                });
+                asientos.push({
+                    asientoId: id6,
+                    salaId: salaSeleccionada,
+                    fila: 'E',
+                    numero: 6,
+                    estado: 'Disponible',
+                    tipo: 'Acompañante',
+                    categoriaAcceso: 'Accesibilidad',
+                    asientoRelacionadoId: id5
+                });
+
+                // Par 4: E7-E8
+                const id7 = asientoId++;
+                const id8 = asientoId++;
+                asientos.push({
+                    asientoId: id7,
+                    salaId: salaSeleccionada,
+                    fila: 'E',
+                    numero: 7,
+                    estado: 'Disponible',
+                    tipo: 'Discapacitado',
+                    categoriaAcceso: 'Accesibilidad',
+                    asientoRelacionadoId: id8
+                });
+                asientos.push({
+                    asientoId: id8,
+                    salaId: salaSeleccionada,
+                    fila: 'E',
+                    numero: 8,
+                    estado: 'Disponible',
+                    tipo: 'Acompañante',
+                    categoriaAcceso: 'Accesibilidad',
+                    asientoRelacionadoId: id7
+                });
+
+                // E9-E14: Normales
+                for (let numero = 9; numero <= 14; numero++) {
+                    asientos.push({
+                        asientoId: asientoId++,
+                        salaId: salaSeleccionada,
+                        fila: 'E',
+                        numero: numero,
+                        estado: 'Disponible',
+                        tipo: 'Normal',
+                        categoriaAcceso: 'Normal',
+                        asientoRelacionadoId: null
+                    });
+                }
+            }
+        });
+
+        return asientos;
+    }
+
+    // ==================== RENDERIZADO ====================
+    function renderizarAsientos(asientos) {
+        const contenedor = document.getElementById('asientosGrid');
+        contenedor.innerHTML = '';
+
+        const asientosPorFila = agruparPorFila(asientos);
+
+        Object.keys(asientosPorFila).sort().forEach(fila => {
+            const filaDiv = document.createElement('div');
+            filaDiv.className = 'fila-asientos';
+
+            const etiqueta = document.createElement('span');
+            etiqueta.className = 'etiqueta-fila';
+            etiqueta.textContent = fila;
+            filaDiv.appendChild(etiqueta);
+
+            const asientosFila = asientosPorFila[fila].sort((a, b) => a.numero - b.numero);
+
+            asientosFila.forEach(asiento => {
+                const btn = crearBotonAsiento(asiento);
+                filaDiv.appendChild(btn);
+            });
+
+            contenedor.appendChild(filaDiv);
+        });
+
+        agregarLeyenda();
+    }
+
+    function agruparPorFila(asientos) {
+        return asientos.reduce((acc, asiento) => {
+            if (!acc[asiento.fila]) acc[asiento.fila] = [];
+            acc[asiento.fila].push(asiento);
+            return acc;
+        }, {});
+    }
+
+    function crearBotonAsiento(asiento) {
+        const btn = document.createElement('button');
+        btn.className = 'asiento';
+        btn.dataset.asientoId = asiento.asientoId;
+        btn.dataset.fila = asiento.fila;
+        btn.dataset.numero = asiento.numero;
+        btn.dataset.tipo = asiento.tipo;
+        btn.dataset.estado = asiento.estado;
+
+        // Clase por tipo (normal/discapacitado/acompañante)
+        btn.classList.add(`asiento-${asiento.tipo.toLowerCase()}`);
+
+        // Clase por estado (ej: "Disponible", "Ocupado", "No disponible", "Reservado")
+        const estadoCss = `estado-${asiento.estado.toLowerCase().replace(/\s+/g, '-')}`;
+        btn.classList.add(estadoCss);
+
+        let icono = '';
+        if (asiento.tipo === 'Discapacitado') icono = '♿';
+        else if (asiento.tipo === 'Acompañante') icono = '🤝';
+
+        btn.innerHTML = `${icono}${asiento.numero}`;
+        btn.title = `${asiento.fila}${asiento.numero} - ${asiento.tipo} (${asiento.estado})`;
+
+        // Si NO está disponible, se desactiva el botón
+        if (asiento.estado !== 'Disponible') {
+            btn.disabled = true;
+        } else {
+            btn.addEventListener('click', () => toggleAsiento(asiento, btn));
+        }
+
+        return btn;
+    }
+
+    function agregarLeyenda() {
+        const leyenda = document.getElementById('leyenda');
+        leyenda.innerHTML = `
+            <div class="leyenda-item">
+                <span class="asiento estado-disponible"></span> Disponible
+            </div>
+            <div class="leyenda-item">
+                <span class="asiento asiento-seleccionado"></span> Seleccionado
+            </div>
+            <div class="leyenda-item">
+                <span class="asiento estado-reservado"></span> Reservado
+            </div>
+            <div class="leyenda-item">
+                <span class="asiento estado-ocupado"></span> Ocupado
+            </div>
+            <div class="leyenda-item">
+                <span class="asiento estado-no-disponible"></span> No disponible
+            </div>
+            <div class="leyenda-item">
+                <span class="asiento asiento-discapacitado">♿</span> Discapacidad
+            </div>
+            <div class="leyenda-item">
+                <span class="asiento asiento-acompañante">🤝</span> Acompañante
+            </div>
+        `;
+    }
+
+    // ==================== SELECCIÓN ====================
+    function toggleAsiento(asiento, btnElement) {
+        const index = asientosSeleccionados.findIndex(
+            a => a.fila === asiento.fila && a.numero === asiento.numero
+        );
+
+        if (index >= 0) {
+            asientosSeleccionados.splice(index, 1);
+            btnElement.classList.remove('asiento-seleccionado');
+        } else {
+            // Máximo 3 entradas por reserva
+            if (asientosSeleccionados.length >= 3) {
+                mostrarMensaje('❌ Máximo 3 asientos por reserva', 'warning');
+                return;
+            }
+            mostrarModalTipoEntrada(asiento, btnElement);
+        }
+
+        actualizarResumen();
+    }
+
+    function mostrarModalTipoEntrada(asiento, btnElement) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+
+        let opcionesTipos = '';
+        if (asiento.tipo === 'Discapacitado') {
+            opcionesTipos = `<option value="3">Persona con discapacidad - S/ 22.00</option>`;
+        } else if (asiento.tipo === 'Acompañante') {
+            opcionesTipos = `<option value="4">Acompañante - S/ 22.00</option>`;
+        } else {
+            opcionesTipos = `
+                <option value="1">Adulto - S/ 29.00</option>
+                <option value="2">Niño - S/ 25.00</option>
+            `;
+        }
+
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3>🎫 Tipo de Entrada</h3>
+                <p><strong>Asiento:</strong> ${asiento.fila}${asiento.numero}</p>
+                <p><strong>Tipo:</strong> ${asiento.tipo}</p>
+                <select id="selectTipoEntrada" class="form-control">
+                    <option value="">-- Seleccione --</option>
+                    ${opcionesTipos}
+                </select>
+                <div class="modal-buttons">
+                    <button id="btnConfirmarTipo" class="btn btn-primary">Confirmar</button>
+                    <button id="btnCancelarTipo" class="btn btn-secondary">Cancelar</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        document.getElementById('btnConfirmarTipo').addEventListener('click', () => {
+            const tipoEntradaId = parseInt(document.getElementById('selectTipoEntrada').value);
+
+            if (!tipoEntradaId) {
+                mostrarMensaje('❌ Seleccione un tipo de entrada', 'error');
+                return;
+            }
+
+            asientosSeleccionados.push({
+                fila: asiento.fila,
+                numero: asiento.numero,
+                tipoEntradaId: tipoEntradaId,
+                asientoId: asiento.asientoId,
+                tipo: asiento.tipo,
+                precio: TIPOS_ENTRADA[tipoEntradaId].precio
+            });
+
+            btnElement.classList.add('asiento-seleccionado');
+            actualizarResumen();
+            document.body.removeChild(modal);
+        });
+
+        document.getElementById('btnCancelarTipo').addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
+    }
+
+    // ==================== RESUMEN ====================
+    function actualizarResumen() {
+        const resumenDiv = document.getElementById('resumen');
+        precioTotal = asientosSeleccionados.reduce((sum, a) => sum + a.precio, 0);
+
+        if (asientosSeleccionados.length === 0) {
+            resumenDiv.innerHTML = '<p class="text-muted">No hay asientos seleccionados</p>';
+            document.getElementById('btnContinuar').disabled = true;
+            return;
+        }
+
+        let html = '<div class="lista-asientos">';
+        asientosSeleccionados.forEach(asiento => {
+            const tipoEntrada = TIPOS_ENTRADA[asiento.tipoEntradaId];
+            html += `
+                <div class="asiento-resumen">
+                    <span class="ubicacion">${asiento.fila}${asiento.numero}</span>
+                    <span class="tipo">${tipoEntrada.nombre}</span>
+                    <span class="precio">S/ ${asiento.precio.toFixed(2)}</span>
+                </div>
+            `;
+        });
+        html += '</div>';
+        html += `
+            <div class="total-resumen">
+                <strong>Total:</strong>
+                <strong>S/ ${precioTotal.toFixed(2)}</strong>
+            </div>
+        `;
+
+        resumenDiv.innerHTML = html;
+        document.getElementById('btnContinuar').disabled = false;
+    }
+
+    // ==================== LIMPIAR SELECCIÓN ====================
+    function limpiarSeleccion() {
+        // Si no hay nada seleccionado → no limpiar
+        if (asientosSeleccionados.length === 0) {
+            mostrarMensaje('⚠️ No hay asientos seleccionados para limpiar', 'warning');
+            return;
+        }
+
+        // Si la sala ya está llena (0 disponibles) → no dejar limpiar
+        const disponibles = asientosDisponibles.filter(a => a.estado === 'Disponible').length;
+        if (disponibles === 0) {
+            mostrarMensaje('❌ La sala ya no tiene asientos disponibles, no se puede limpiar la selección.', 'error');
+            return;
+        }
+
+        asientosSeleccionados = [];
+        precioTotal = 0.0;
+        document.querySelectorAll('.asiento-seleccionado').forEach(btn => {
+            btn.classList.remove('asiento-seleccionado');
+        });
+        actualizarResumen();
+        mostrarMensaje('🧹 Selección limpiada', 'success');
+    }
+
+    // ==================== PROCESAR RESERVA ====================
+    async function procesarReserva() {
+        if (asientosSeleccionados.length === 0) {
+            mostrarMensaje('❌ Seleccione al menos un asiento', 'warning');
+            return;
+        }
+
+        const usuarioId = obtenerUsuarioId();
+        if (!usuarioId) {
+            mostrarMensaje('❌ Inicie sesión para continuar', 'error');
+            setTimeout(() => window.location.href = 'login.html', 2000);
+            return;
+        }
+
+        const requestBody = {
+            idCliente: usuarioId,
+            idFuncion: funcionSeleccionada,
+            asientosSeleccionados: asientosSeleccionados.map(a => ({
+                fila: a.fila,
+                numero: a.numero,
+                tipoEntradaId: a.tipoEntradaId
+            }))
+        };
+
+        console.log('========== ENVIANDO RESERVA ==========');
+        console.log('Request:', JSON.stringify(requestBody, null, 2));
+
+        try {
+            mostrarCargando(true);
+
+            const response = await fetch(`${API_RESERVAS_URL}/crear`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody)
+            });
+
+            console.log('Response status:', response.status);
+            const data = await response.json();
+            console.log('Response data:', data);
+
+            if (response.ok && data.success) {
+                mostrarMensaje(data.mensaje || '✅ Reserva exitosa', 'success');
+                console.log('✓ Código de reserva:', data.data.codigoReserva);
+
+                setTimeout(() => {
+                    window.location.href = `confirmacion.html?codigo=${data.data.codigoReserva}`;
+                }, 2000);
+            } else {
+                mostrarMensaje(data.mensaje || '❌ Error al procesar reserva', 'error');
+            }
+
+        } catch (error) {
+            console.error('========== ERROR DE RED ==========');
+            console.error(error);
+
+            let mensaje = '❌ Error de conexión. ';
+            if (error.message && error.message.includes('fetch')) {
+                mensaje += 'Verifica que el backend esté en http://localhost:8080';
+            }
+            mostrarMensaje(mensaje, 'error');
+
+        } finally {
+            mostrarCargando(false);
+        }
+    }
+
+    // ==================== UTILIDADES ====================
+    function obtenerUsuarioId() {
+        const id = sessionStorage.getItem('usuarioID') ||
+            localStorage.getItem('usuarioID') ||
+            sessionStorage.getItem('idCliente') ||
+            localStorage.getItem('idCliente');
+
+        if (!id) {
+            console.warn('⚠️ Usuario no encontrado, usando ID de prueba: 1');
+            return 1;
+        }
+        return parseInt(id);
+    }
+
+    function mostrarCargando(mostrar) {
+        const loader = document.getElementById('loader');
+        if (loader) loader.style.display = mostrar ? 'flex' : 'none';
+    }
+
+    function mostrarMensaje(mensaje, tipo = 'info') {
+        console.log(`[${tipo.toUpperCase()}] ${mensaje}`);
+
+        const alertDiv = document.getElementById('alertMessage');
+        if (!alertDiv) return;
+
+        const icono = tipo === 'success' ? '✅' :
+            tipo === 'error' ? '❌' :
+                tipo === 'warning' ? '⚠️' : 'ℹ️';
+
+        alertDiv.innerHTML = `<strong>${icono} ${mensaje}</strong>`;
+        alertDiv.className = `alert ${tipo}`;
+        alertDiv.style.display = 'block';
+
+        setTimeout(() => {
+            alertDiv.style.opacity = '0';
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+                alertDiv.style.opacity = '1';
+            }, 300);
+        }, 5000);
+    }
+
+    window.addEventListener('beforeunload', (e) => {
+        if (asientosSeleccionados.length > 0) {
+            e.preventDefault();
+            e.returnValue = '¿Salir? Perderá su selección de asientos.';
+        }
+    });
+
+    console.log('✅ Sistema cargado correctamente');
+</script>
+</body>
+</html>

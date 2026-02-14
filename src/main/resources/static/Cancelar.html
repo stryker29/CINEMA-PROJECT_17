@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineStar - Cancelar Reserva</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a0000 0%, #330000 25%, #000000 50%, #1a0000 75%, #330000 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #fff;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        header {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px 40px;
+            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.3);
+            border-bottom: 2px solid #ff0000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info h2 {
+            color: #ff0000;
+            font-size: 1.3em;
+        }
+
+        .back-btn {
+            padding: 10px 20px;
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            border-radius: 8px;
+            color: #ff0000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            background: #ff0000;
+            color: #000;
+        }
+
+        .container {
+            flex: 1;
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .page-title {
+            text-align: center;
+            color: #ff0000;
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+        }
+
+        .search-section {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 0, 0, 0.4);
+            margin-bottom: 30px;
+        }
+
+        .search-section h3 {
+            color: #ff0000;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #ff6666;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(255, 0, 0, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group select {
+            cursor: pointer;
+        }
+
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #ff0000;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .form-group select option {
+            background: #1a0000;
+            color: #fff;
+            padding: 10px;
+        }
+
+        .input-container {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .input-container.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #ff0000, #cc0000);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 6px 20px rgba(255, 0, 0, 0.6);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        .results-section {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid rgba(255, 0, 0, 0.4);
+            display: none;
+        }
+
+        .results-section h3 {
+            color: #ff0000;
+            margin-bottom: 20px;
+        }
+
+        .reserva-card {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .reserva-card h4 {
+            color: #ff0000;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .reserva-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            color: #ff6666;
+        }
+
+        .info-item strong {
+            color: #fff;
+        }
+
+        .cancel-form {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 0, 0, 0.3);
+        }
+
+        .cancel-form textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(255, 0, 0, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1em;
+            min-height: 100px;
+            resize: vertical;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .cancel-form textarea:focus {
+            outline: none;
+            border-color: #ff0000;
+        }
+
+        .alert {
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            display: none;
+            text-align: center;
+        }
+
+        .alert.success {
+            background: rgba(0, 255, 0, 0.2);
+            border: 2px solid #00ff00;
+            color: #00ff00;
+        }
+
+        .alert.error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            color: #ff6666;
+        }
+
+        footer {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px;
+            text-align: center;
+            border-top: 2px solid #ff0000;
+            color: #ff6666;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .page-title {
+                font-size: 2em;
+            }
+
+            .reserva-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="user-info">
+        <h2>👤 <span id="nombreEmpleado"></span></h2>
+    </div>
+    <a href="main.html" class="back-btn">← Volver al Menú</a>
+</header>
+
+<div class="container">
+    <h1 class="page-title">❌ CANCELAR RESERVA</h1>
+
+    <div id="alertMessage" class="alert"></div>
+
+    <!-- ✅ SECCIÓN DE BÚSQUEDA ÚNICA -->
+    <div class="search-section">
+        <h3>🔍 Buscar Reserva</h3>
+
+        <!-- Selector de tipo de búsqueda -->
+        <div class="form-group">
+            <label for="tipoBusqueda">Seleccione cómo desea buscar:</label>
+            <select id="tipoBusqueda" onchange="cambiarTipoBusqueda()">
+                <option value="">-- Seleccione una opción --</option>
+                <option value="codigo">🎫 Por Código de Reserva</option>
+                <option value="nombre">👤 Por Nombre de Cliente</option>
+            </select>
+        </div>
+
+        <!-- Campo para código (oculto inicialmente) -->
+        <div id="campoCodigo" class="input-container">
+            <div class="form-group">
+                <label for="codigoReserva">Código de Reserva:</label>
+                <input type="text" id="codigoReserva" placeholder="Ejemplo: RES-001">
+            </div>
+            <button class="btn" onclick="buscarReserva()">🔍 Buscar por Código</button>
+        </div>
+
+        <!-- Campo para nombre (oculto inicialmente) -->
+        <div id="campoNombre" class="input-container">
+            <div class="form-group">
+                <label for="nombreCliente">Nombre o Apellido del Cliente:</label>
+                <input type="text" id="nombreCliente" placeholder="Ej: Suanne...">
+            </div>
+            <button class="btn" onclick="buscarPorNombre()">🔍 Buscar por Nombre</button>
+        </div>
+    </div>
+
+    <!-- ✅ RESULTADOS -->
+    <div id="resultsSection" class="results-section">
+        <h3>📋 Resultado de Búsqueda</h3>
+        <div id="reservaCard"></div>
+    </div>
+</div>
+
+<footer>
+    © 2025 CineStar - Sistema de Gestión Interno
+</footer>
+
+<script src="js/Cancelar.js"></script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineStar - Panel de Control</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a0000 0%, #330000 25%, #000000 50%, #1a0000 75%, #330000 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            display: flex; flex-direction: column; color: #fff;
+        }
+        @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        header {
+            background: rgba(0, 0, 0, 0.9); padding: 20px 40px;
+            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.3); border-bottom: 2px solid #ff0000;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .user-info { display: flex; align-items: center; gap: 20px; }
+        .user-info h2 { color: #ff0000; font-size: 1.5em; }
+        .user-info p { color: #ff6666; font-size: 1em; }
+        .logout-btn {
+            padding: 10px 20px; background: rgba(255, 0, 0, 0.2); border: 2px solid #ff0000;
+            border-radius: 8px; color: #ff0000; cursor: pointer; transition: all 0.3s ease; font-weight: bold;
+        }
+        .logout-btn:hover { background: #ff0000; color: #000; transform: scale(1.05); }
+
+        .container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
+        .dashboard-content {
+            background: rgba(0, 0, 0, 0.8); padding: 60px 50px; border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(255, 0, 0, 0.4); border: 2px solid rgba(255, 0, 0, 0.4);
+            max-width: 1000px; width: 100%;
+        }
+        .dashboard-content h1 {
+            color: #ff0000; text-align: center; font-size: 2.5em; margin-bottom: 50px;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+        }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 30px; }
+        .menu-card {
+            background: rgba(255, 0, 0, 0.1); border: 2px solid #ff0000; border-radius: 15px;
+            padding: 40px 30px; text-align: center; cursor: pointer; transition: all 0.3s ease;
+            text-decoration: none; color: #fff; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+        .menu-card:hover {
+            background: rgba(255, 0, 0, 0.3); transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.6);
+        }
+        .menu-card.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+        .menu-card .icon { font-size: 4em; margin-bottom: 20px; }
+        .menu-card h3 { color: #ff0000; font-size: 1.5em; margin-bottom: 10px; }
+        .menu-card p { color: #ff6666; font-size: 0.9em; }
+        footer {
+            background: rgba(0, 0, 0, 0.9); padding: 15px; text-align: center;
+            border-top: 2px solid #ff0000; color: #ff6666;
+        }
+        @media (max-width: 768px) {
+            header { flex-direction: column; gap: 20px; }
+            .dashboard-content { padding: 40px 30px; }
+            .menu-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="user-info">
+        <div>
+            <h2>👤 <span id="nombreEmpleado"></span></h2>
+            <p>🔐 Cargo: <span id="cargoEmpleado"></span></p>
+        </div>
+    </div>
+    <button class="logout-btn" onclick="cerrarSesion()">🚪 Cerrar Sesión</button>
+</header>
+
+<div class="container">
+    <div class="dashboard-content">
+        <h1>🎬 PANEL DE CONTROL</h1>
+
+        <div class="menu-grid">
+            <a href="modiFunciones.html" class="menu-card">
+                <div class="icon">⚙️</div>
+                <h3>Modificar Funciones</h3>
+                <p>Editar y actualizar funciones</p>
+            </a>
+
+            <a href="crearReserva.html" class="menu-card">
+                <div class="icon">🎫</div>
+                <h3>Hacer Reservas</h3>
+                <p>Crear nuevas reservas de películas</p>
+            </a>
+
+            <a href="VerReservas.html" class="menu-card">
+                <div class="icon">📋</div>
+                <h3>Ver Historial</h3>
+                <p>Consultar historial de reservas</p>
+            </a>
+
+            <a href="Cancelar.html" class="menu-card">
+                <div class="icon">❌</div>
+                <h3>Cancelar Reserva</h3>
+                <p>Gestionar cancelaciones de reservas</p>
+            </a>
+
+            <a href="venderBoleto.html" class="menu-card">
+                <div class="icon">⚡</div>
+                <h3>Venta Rápida</h3>
+                <p>Venta directa sin reserva previa</p>
+            </a>
+
+            <a href="pago.html" class="menu-card">
+                <div class="icon">💳</div>
+                <h3>Caja / Pagos</h3>
+                <p>Cobrar reservas pendientes</p>
+            </a>
+        </div>
+    </div>
+</div>
+
+<footer>
+    © 2025 CineStar - Sistema de Gestión Interno
+</footer>
+
+<script>
+    const empleado = JSON.parse(sessionStorage.getItem('empleado'));
+    if (!empleado) {
+        alert('No has iniciado sesión');
+        window.location.href = 'admin-login.html';
+    } else {
+        document.getElementById('nombreEmpleado').textContent = empleado.nombreCompleto;
+        document.getElementById('cargoEmpleado').textContent = empleado.cargo;
+    }
+    function cerrarSesion() {
+        if (confirm('¿Estás seguro de cerrar sesión?')) {
+            sessionStorage.clear();
+            window.location.href = 'admin-login.html';
+        }
+    }
+</script>
+</body>
+</html>
