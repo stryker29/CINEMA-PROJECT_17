@@ -75,6 +75,25 @@ El objetivo fue aplicar buenas prácticas de desarrollo web, estructuración de 
 
 ---
 
+## 📷 Capturas del Sistema
+
+### 🏠 Página Principal
+![Inicio](screenshots/inicio.png)
+
+### 🎬 Panel Administrador
+![Admin](screenshots/admin.png)
+
+### 🪑 Reserva
+![Reserva](screenshots/reserva.png)
+
+### 💳 Pago
+![Pago](screenshots/pago.png)
+
+### 🎟 Boleto generado
+![Boleto](screenshots/boleto.png)
+
+---
+
 ## 👨‍💻 Autor
 
 Desarrollado por Diego Aguilar Guzman
